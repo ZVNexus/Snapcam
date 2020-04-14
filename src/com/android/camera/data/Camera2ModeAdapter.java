@@ -41,7 +41,7 @@ import java.util.List;
 
 public class Camera2ModeAdapter extends RecyclerView.Adapter<Camera2ModeAdapter.ViewHolder> {
     private List<String> mModeList;
-    private int mSelectedPos = 1;
+    private int mSelectedPos = 2;
     private OnItemClickListener mOnItemClickListener;
 
     public Camera2ModeAdapter(List<String> list) {
@@ -67,9 +67,10 @@ public class Camera2ModeAdapter extends RecyclerView.Adapter<Camera2ModeAdapter.
         holder.mCameraModeText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSelectedPos = position;
-                notifyDataSetChanged();
-                mOnItemClickListener.onItemClick(position);
+                if (mOnItemClickListener.onItemClick(position) >= 0) {
+                    mSelectedPos = position;
+                    notifyDataSetChanged();
+                }
             }
         });
     }
@@ -80,7 +81,12 @@ public class Camera2ModeAdapter extends RecyclerView.Adapter<Camera2ModeAdapter.
     }
 
     public interface OnItemClickListener {
-        void onItemClick(int mode);
+        int onItemClick(int mode);
+    }
+
+    public void setSelectedPosition(int position) {
+        mSelectedPos = position;
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{

@@ -258,6 +258,7 @@ public class CameraActivity extends Activity
     private ImageView mThumbnail;
     private UpdateThumbnailTask mUpdateThumbnailTask;
     private CircularDrawable mThumbnailDrawable;
+    private Bitmap mThumbnailBitmap;
     // FilmStripView.setDataAdapter fires 2 onDataLoaded calls before any data is actually loaded
     // Keep track of data request here to avoid creating useless UpdateThumbnailTask.
     private boolean mDataRequested;
@@ -641,8 +642,7 @@ public class CameraActivity extends Activity
         View decorView = getWindow().getDecorView();
         int currentSystemUIVisibility = decorView.getSystemUiVisibility();
         int systemUIVisibility = DEFAULT_SYSTEM_UI_VISIBILITY;
-        int systemUINotVisible = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN |
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        int systemUINotVisible = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
         int newSystemUIVisibility = systemUIVisibility
                 | (visible ? View.SYSTEM_UI_FLAG_VISIBLE : systemUINotVisible);
@@ -711,7 +711,7 @@ public class CameraActivity extends Activity
         return mDataAdapter;
     }
 
-    private String getPathFromUri(Uri uri) {
+    public String getPathFromUri(Uri uri) {
         String[] projection = {
                 MediaStore.Images.Media.DATA
         };
@@ -751,6 +751,9 @@ public class CameraActivity extends Activity
 
     public void updateThumbnail(final Bitmap bitmap) {
         if (bitmap == null) return;
+        if (mThumbnailBitmap != null)
+            mThumbnailBitmap.recycle();
+        mThumbnailBitmap = bitmap;
         mThumbnailDrawable = new CircularDrawable(bitmap);
         if (mThumbnail != null) {
             mThumbnail.setImageDrawable(mThumbnailDrawable);
@@ -816,8 +819,9 @@ public class CameraActivity extends Activity
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            if (mJpegData != null)
+            if (mJpegData != null) {
                 return decodeImageCenter(null);
+            }
 
             LocalDataAdapter adapter = getDataAdapter();
             ImageData img = adapter.getImageData(1);
@@ -883,7 +887,7 @@ public class CameraActivity extends Activity
                         }
                         orientation = Exif.getOrientation(exif);
                     } catch (IOException e) {
-                        // ignore
+                        e.printStackTrace();
                     }
                 }
             }
@@ -926,9 +930,11 @@ public class CameraActivity extends Activity
             if (orientation != 0) {
                 Matrix matrix = new Matrix();
                 matrix.setRotate(orientation);
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap =  Bitmap.createBitmap(bitmap, 0, 0,
                         bitmap.getWidth(), bitmap.getHeight(), matrix, false);
             }
+            if (decoder != null)
+                decoder.recycle();
             return bitmap;
         }
     }
@@ -1809,6 +1815,12 @@ public class CameraActivity extends Activity
             isStartPermissionActivity = true;
         }
         return isStartPermissionActivity;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     @Override

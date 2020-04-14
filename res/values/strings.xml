@@ -247,6 +247,10 @@
     <!-- The default quality value is NULL -->
     <string name="pref_video_quality_default" translatable="false">1920x1080</string>
     <!-- Video quality setting entry.
+    Videos will be recorded in 8k DCI quality. [CHAR LIMIT=24] -->
+    <string name="pref_video_quality_entry_8k" translatable="false">
+    8k</string>
+    <!-- Video quality setting entry.
     Videos will be recorded in 4k DCI quality. [CHAR LIMIT=24] -->
     <string name="pref_video_quality_entry_4kdci" translatable="false">
     4k DCI</string>
@@ -282,6 +286,8 @@
 
     <!-- Settings screen, Picture size title -->
     <string name="pref_camera_picturesize_title">Picture size</string>
+    <!-- Settings screen, dialog choice for 48 megapixels picture size [CHAR LIMIT=20] -->
+    <string name="pref_camera_picturesize_entry_256mp">256M pixels</string>
     <!-- Settings screen, dialog choice for 48 megapixels picture size [CHAR LIMIT=20] -->
     <string name="pref_camera_picturesize_entry_48mp">48M pixels</string>
     <!-- Settings screen, dialog choice for 32 megapixels picture size [CHAR LIMIT=20] -->
@@ -779,4 +785,9 @@ CHAR LIMIT = NONE] -->
     <string name="overflow_best_item2">Delete All</string>
 
     <string name="settings_title">Settings</string>
+    <string name="camera_default_mode">Default</string>
+    <string name="camera_bokeh_mode">Bokeh</string>
+    <string name="camera_sat_mode">SAT</string>
+    <string name="camera_pano_mode">Panorama</string>
+    <string name="camera_pro_mode">ProMode</string>
  </resources>

@@ -74,8 +74,7 @@
     ,
     "18":
     {"pref_camera2_coloreffect_key":"0",
-      "pref_camera2_zsl_key":"disable",
-      "pref_camera2_picture_format_key":"0"}
+      "pref_camera2_zsl_key":"disable"}
     ,
     "100":
     {"pref_camera2_longshot_key":"off",
@@ -148,6 +147,12 @@
     "on":{"pref_camera2_longshot_key":"off"},
     "off":{}
   },
+  "pref_camera2_zsl_key":
+  {
+    "app-zsl": {"pref_camera2_saveraw_key": "disable"},
+    "hal-zsl": {},
+    "disable": {}
+  },
   "pref_camera2_videoencoder_key":
   {
     "mpeg-4-sp":{"pref_camera2_videoencoderprofile_key":"off"},
@@ -157,8 +162,7 @@
   },
   "pref_camera2_capture_mfnr_key":
   {
-    "1":{"pref_camera2_zsl_key":"disable",
-         "pref_camera2_longshot_key":"off",
+    "1":{"pref_camera2_longshot_key":"off",
          "pref_camera2_manual_exp_key":"off",
          "pref_camera2_selfiemirror_key":"off"},
     "0":{}
@@ -167,5 +171,18 @@
   {
     "enable":{"pref_camera2_longshot_key":"off"},
     "disable":{}
+  },
+  "pref_camera2_hfr_key":
+  {
+    "hfr90":{"pref_camera2_dis_key":"off"},
+    "hfr120":{"pref_camera2_dis_key":"off"},
+    "hfr240":{"pref_camera2_dis_key":"off"},
+    "hfr480":{"pref_camera2_dis_key":"off"},
+    "hfr960":{"pref_camera2_dis_key":"off"},
+    "hsr90":{"pref_camera2_dis_key":"off"},
+    "hsr120":{"pref_camera2_dis_key":"off"},
+    "hsr240":{"pref_camera2_dis_key":"off"},
+    "hsr480":{"pref_camera2_dis_key":"off"},
+    "hsr960":{"pref_camera2_dis_key":"off"}
   }
 }

@@ -403,17 +403,27 @@
      <string name="pref_camera_hfr_title">Video High FrameRate</string>
 
      <!-- Settings screen, hfr radio button choices -->
-     <string name="pref_camera_hfr_entry_off">Off</string>
+     <string name="pref_camera_hfr_entry_off">30FPS</string>
      <string name="pref_camera_hfr_entry_2x">HFR 60</string>
      <string name="pref_camera_hfr_entry_3x">HFR 90</string>
      <string name="pref_camera_hfr_entry_4x">HFR 120</string>
      <string name="pref_camera_hfr_entry_8x">HFR 240</string>
      <string name="pref_camera_hfr_entry_16x">HFR 480</string>
+     <string name="pref_camera_hfr_entry_32x">HFR 960</string>
      <string name="pref_camera_hfr_entry_hsr_60">HSR 60</string>
      <string name="pref_camera_hfr_entry_hsr_90">HSR 90</string>
      <string name="pref_camera_hfr_entry_hsr_120">HSR 120</string>
      <string name="pref_camera_hfr_entry_hsr_240">HSR 240</string>
      <string name="pref_camera_hfr_entry_hsr_480">HSR 480</string>
+     <string name="pref_camera_hfr_entry_hsr_960">HSR 960</string>
+     <string name="pref_camera_hfr_entry_2x_ssm_120">Super SloMo 120->240</string>
+     <string name="pref_camera_hfr_entry_4x_ssm_120">Super SloMo 120->480</string>
+     <string name="pref_camera_hfr_entry_2x_ssm_240">Super SloMo 240->480</string>
+     <string name="pref_camera_hfr_entry_4x_ssm_240">Super SloMo 240->960</string>
+     <string name="pref_camera_hfr_entry_2x_ssm_480">Super SloMo 480->960</string>
+     <string name="pref_camera_hfr_entry_4x_ssm_480">Super SloMo 480->1920</string>
+     <string name="pref_camera_hfr_entry_2x_ssm_960">Super SloMo 960->1920</string>
+     <string name="pref_camera_hfr_entry_4x_ssm_960">Super SloMo 960->3840</string>
 
      <!-- HFR entry values. Do not translate. -->
      <string name="pref_camera_hfr_value_off">off</string>
@@ -422,11 +432,21 @@
      <string name="pref_camera_hfr_value_4x">hfr120</string>
      <string name="pref_camera_hfr_value_8x">hfr240</string>
      <string name="pref_camera_hfr_value_16x">hfr480</string>
+     <string name="pref_camera_hfr_value_32x">hfr960</string>
      <string name="pref_camera_hfr_value_hsr_60">hsr60</string>
      <string name="pref_camera_hfr_value_hsr_90">hsr90</string>
      <string name="pref_camera_hfr_value_hsr_120">hsr120</string>
      <string name="pref_camera_hfr_value_hsr_240">hsr240</string>
      <string name="pref_camera_hfr_value_hsr_480">hsr480</string>
+     <string name="pref_camera_hfr_value_hsr_960">hsr960</string>
+     <string name="pref_camera_hfr_value_2x_ssm_120">2x_120</string>
+     <string name="pref_camera_hfr_value_4x_ssm_120">4x_120</string>
+     <string name="pref_camera_hfr_value_2x_ssm_240">2x_240</string>
+     <string name="pref_camera_hfr_value_4x_ssm_240">4x_240</string>
+     <string name="pref_camera_hfr_value_2x_ssm_480">2x_480</string>
+     <string name="pref_camera_hfr_value_4x_ssm_480">4x_480</string>
+     <string name="pref_camera_hfr_value_2x_ssm_960">2x_960</string>
+     <string name="pref_camera_hfr_value_4x_ssm_960">4x_960</string>
 
      <!-- Default noise reduction setting. Do not translate. -->
      <string name="pref_camera_noise_reduction_default">off</string>
@@ -856,6 +876,7 @@
     <string name="pref_camera_longshot_title">Continuous Shot</string>
     <string name="msg_cancel_longshot_for_limited_memory">run out of memory, canceling longshot</string>
 
+    <string name="pref_camera_gridline_title">Grid Line</string>
     <!-- Toast showing non-supported functionality for flash in AE bracket -->
     <string name="flash_aebracket_message">Flash is not supported in AE-Bracket Mode</string>
 
@@ -872,6 +893,8 @@
 
     <!-- toast message for storage location switch -->
     <string name="on_switch_save_path_to_sdcard">Internal storage space is not enough - switched save path to SD card</string>
+
+    <string name="storage_not_enough">Storage space is not enough</string>
 
     <string name="pref_camera_hdr_mode_default">hdr-mode-multiframe</string>
 
@@ -1053,6 +1076,14 @@
     <string name="pref_camera2_shutter_sound_entry_off" translatable="true">@string/pref_camera_shuttersound_entry_disable</string>
     <string name="pref_camera2_shutter_sound_title" translatable="true">@string/pref_camera_shuttersound_title</string>
 
+    <string name="pref_camera2_touch_track_focus_default" translatable="true">off</string>
+    <string name="pref_camera2_touch_track_focus_value_on" translatable="true">on</string>
+    <string name="pref_camera2_touch_track_focus_value_off" translatable="true">off</string>
+
+    <string name="pref_camera2_touch_track_focus_entry_on" translatable="true">Enable</string>
+    <string name="pref_camera2_touch_track_focus_off" translatable="true">Disable</string>
+    <string name="pref_camera2_touch_track_focus_title" translatable="true">Touch Track Focus</string>
+
     <string name="pref_camera2_timer_entry_off" translatable="true">Off</string>
     <string name="pref_camera2_timer_entry_2sec" translatable="true">2 seconds</string>
     <string name="pref_camera2_timer_entry_5sec" translatable="true">5 seconds</string>
@@ -1171,11 +1202,21 @@
     <string name="pref_camera_zoom_entry_9x">9x</string>
     <string name="pref_camera_zoom_entry_10x">10x</string>
     <string name="pref_camera2_bsgc_title" translatable="true">Smile/blink/gaze Detection</string>
+    <string name="pref_camera2_facial_contour_title" translatable="true">Facial contour</string>
+    <string name="pref_camera2_face_points_title" translatable="true">Face points</string>
+    <string name="pref_camera2_face_detection_mode_title" translatable="true">Face detection mode</string>
     <string name="pref_camera2_bsgc_default" translatable="false">disable</string>
     <string name="pref_camera2_bsgc_entry_enable" translatable="true">Enable</string>
     <string name="pref_camera2_bsgc_entry_disable" translatable="true">Disable</string>
     <string name="pref_camera2_bsgc_entry_value_enable" translatable="false">enable</string>
     <string name="pref_camera2_bsgc_entry_value_disable" translatable="false">disable</string>
+    <string name="pref_camera2_facial_contour_default" translatable="false">disable</string>
+    <string name="pref_camera2_face_points_default" translatable="false">disable</string>
+    <string name="pref_camera2_face_detection_mode_default" translatable="false">1</string>
+    <string name="pref_camera2_face_detection_entry_simple" translatable="true">Simple</string>
+    <string name="pref_camera2_face_detection_entry_full" translatable="true">Full</string>
+    <string name="pref_camera2_face_detection_entry_value_simple" translatable="false">1</string>
+    <string name="pref_camera2_face_detection_entry_value_full" translatable="false">2</string>
 
 
     <string name="pref_camera2_picturesize_default" translatable="false">3840x2160</string>
@@ -1273,16 +1314,32 @@
     <string name="pref_camera2_deepportrait_entry_value_enable" translatable="false">on</string>
     <string name="pref_camera_scenemode_entry_deepportrait" translatable="false">Deepportrait</string>
 
+    <string name="pref_camera2_switcher_title" translatable="false">Camera Switcher</string>
+    <string name="pref_camera2_switcher_default" translatable="false">rear</string>
+    <string name="pref_camera2_switcher_entry_rear" translatable="false">rear</string>
+    <string name="pref_camera2_switcher_entry_front" translatable="false">front</string>
+    <string name="pref_camera2_switcher_entry_value_rear" translatable="false">rear</string>
+    <string name="pref_camera2_switcher_entry_value_front" translatable="false">front</string>
+
+    <string name="pref_camera2_force_aux_title" translatable="false">Force AUX</string>
+    <string name="pref_camera2_force_aux_default" translatable="false">off</string>
+    <string name="pref_camera2_force_aux_entry_on" translatable="false">on</string>
+    <string name="pref_camera2_force_aux_entry_off" translatable="false">off</string>
+    <string name="pref_camera2_force_aux_entry_value_on" translatable="false">on</string>
+    <string name="pref_camera2_force_aux_entry_value_off" translatable="false">off</string>
+
     <string name="pref_camera2_stats_visualizer_title" translatable="true">Stats Visualizer</string>
     <string name="pref_camera2_stats_visualizer_default" translatable="false"></string>
     <string name="pref_camera2_stats_visualizer_entry_bg_stats" translatable="false">BG Stats</string>
     <string name="pref_camera2_stats_visualizer_entry_be_stats" translatable="false">BE Stats</string>
     <string name="pref_camera2_stats_visualizer_entry_hist_stats" translatable="false">Hist Stats</string>
     <string name="pref_camera2_stats_visualizer_entry_awb_info" translatable="false">AWB Info</string>
+    <string name="pref_camera2_stats_visualizer_entry_aec_info" translatable="false">AEC Info</string>
     <string name="pref_camera2_stats_visualizer_entry_value_enable_bg" translatable="false">0</string>
     <string name="pref_camera2_stats_visualizer_entry_value_enable_be" translatable="false">1</string>
     <string name="pref_camera2_stats_visualizer_entry_value_enable_hist" translatable="false">2</string>
     <string name="pref_camera2_stats_visualizer_entry_value_enable_awb" translatable="false">3</string>
+    <string name="pref_camera2_stats_visualizer_entry_value_enable_aec" translatable="false">4</string>
     <string name="stats_visualizer_bg_label">BG GraphView</string>
     <string name="stats_visualizer_be_label">BE GraphView</string>
 
@@ -1292,6 +1349,13 @@
     <string name="pref_camera2_capture_mfnr_entry_disable" translatable="true">disable</string>
     <string name="pref_camera2_capture_mfnr_entry_value_enable" translatable="false">1</string>
     <string name="pref_camera2_capture_mfnr_entry_value_disable" translatable="false">0</string>
+
+    <string name="pref_camera2_live_preview_title" translatable="true">LivePreview</string>
+    <string name="pref_camera2_live_preview_default" translatable="false">0</string>
+    <string name="pref_camera2_live_preview_entry_enable" translatable="true">enable</string>
+    <string name="pref_camera2_live_preview_entry_disable" translatable="true">disable</string>
+    <string name="pref_camera2_live_preview_entry_value_enable" translatable="false">1</string>
+    <string name="pref_camera2_live_preview_entry_value_disable" translatable="false">0</string>
 
     <string name="pref_camera2_fs2_title" translatable="true">FastShutter</string>
     <string name="pref_camera2_fs2_default" translatable="false">0</string>
@@ -1307,5 +1371,18 @@
     <string name="pref_camera2_abort_captures_entry_value_enable" translatable="false">1</string>
     <string name="pref_camera2_abort_captures_entry_value_disable" translatable="false">0</string>
 
+    <!-- tone mapping -->
+    <string name="pref_camera_tone_mapping_default">off</string>
+	<string name="pref_camera_tone_mapping_title">Tone Mapping</string>
+    <!-- tone mapping entry-->
+    <string name="pref_camera_tone_mapping_entry_dark_boost_offset">Dark boost offset</string>
+    <string name="pref_camera_tone_mapping_entry_fourth_tone_anchor">Fourth tone anchor</string>
+	<string name="pref_camera_tone_mapping_entry_user_setting">User setting</string>
+    <string name="pref_camera_tone_mapping_entry_off">Off</string>
+    <!-- tone mapping entry value-->
+    <string name="pref_camera_tone_mapping_value_dark_boost_offset">dark_boost_offset</string>
+    <string name="pref_camera_tone_mapping_value_fourth_tone_anchor">fourth_tone_anchor</string>
+    <string name="pref_camera_tone_mapping_value_user_setting">user_setting</string>
+    <string name="pref_camera_tone_mapping_value_off">off</string>
 </resources>
 

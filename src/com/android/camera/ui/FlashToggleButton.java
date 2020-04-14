@@ -35,6 +35,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.android.camera.CaptureModule;
 import com.android.camera.SettingsManager;
 
 import org.codeaurora.snapcam.R;
@@ -71,21 +72,11 @@ public class FlashToggleButton extends RotateImageView {
         String userSetting = mContext.getString(
                 R.string.pref_camera_manual_exp_value_user_setting);
         String manualExposureMode = mSettingsManager.getValue(SettingsManager.KEY_MANUAL_EXPOSURE);
-        String scene = mSettingsManager.getValue(SettingsManager.KEY_SCENE_MODE);
-        boolean mfnrEnable = false;
-        String mfnrValue = mSettingsManager.getValue(SettingsManager.KEY_CAPTURE_MFNR_VALUE);
-        if (mfnrValue != null) {
-            mfnrEnable = mfnrValue.equals("1");
-        }
-        boolean promode = false;
-        if (scene != null) {
-            int mode = Integer.parseInt(scene);
-            if (mode == SettingsManager.SCENE_MODE_PROMODE_INT) {
-                promode = true;
-            }
-        }
         if (mIndex == -1 || (redeye != null && redeye.equals("on")) ||
-                manualExposureMode.equals(userSetting) || promode || mfnrEnable) {
+                manualExposureMode.equals(userSetting) ||
+                CaptureModule.CURRENT_MODE == CaptureModule.CameraMode.PRO_MODE ||
+                CaptureModule.CURRENT_MODE == CaptureModule.CameraMode.RTB ||
+                CaptureModule.CURRENT_MODE == CaptureModule.CameraMode.SAT) {
             setVisibility(GONE);
             return;
         } else {

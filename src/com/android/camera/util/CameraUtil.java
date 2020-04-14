@@ -40,6 +40,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.location.Location;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.telephony.TelephonyManager;
@@ -160,6 +161,8 @@ public class CameraUtil {
     public static final int RATIO_3_2 = 3;
     public static final int MODE_TWO_BT = 1;
     public static final int MODE_ONE_BT = 0;
+    public static final int FACING_FRONT = 1;
+    public static final int FACING_BACK = 0;
     private static final String DIALOG_CONFIG = "dialog_config";
     public static final String KEY_SAVE = "save";
     public static final String KEY_DELETE = "delete";
@@ -202,6 +205,12 @@ public class CameraUtil {
     // Private intent extras. Test only.
     private static final String EXTRAS_CAMERA_FACING =
             "android.intent.extras.CAMERA_FACING";
+
+    private static final String EXTRAS_CAMERA_ID =
+            "android.intent.extras.CAMERA_ID";
+
+    private static final String EXTRAS_USE_FRONT_CAMERA=
+            "com.google.assistant.extra.USE_FRONT_CAMERA";
 
     private static float sPixelDensity = 1;
     private static ImageFileNamer sImageFileNamer;
@@ -818,8 +827,10 @@ public class CameraUtil {
 
         int intentCameraId =
                 currentActivity.getIntent().getIntExtra(CameraUtil.EXTRAS_CAMERA_FACING, -1);
+        boolean openFront = currentActivity.getIntent().getBooleanExtra(
+                CameraUtil.EXTRAS_USE_FRONT_CAMERA,false);
 
-        if (isFrontCameraIntent(intentCameraId)) {
+        if (isFrontCameraIntent(intentCameraId) || openFront) {
             // Check if the front camera exist
             int frontCameraId = CameraHolder.instance().getFrontCameraId();
             if (frontCameraId != -1) {
@@ -833,6 +844,30 @@ public class CameraUtil {
             }
         }
         return cameraId;
+    }
+    public static int getFacingOfIntentExtras(Activity currentActivity) {
+        int facing = currentActivity.getIntent().getIntExtra(CameraUtil.EXTRAS_CAMERA_FACING, -1);
+        Bundle extra = currentActivity.getIntent().getExtras();
+        if (extra != null && extra.get(CameraUtil.EXTRAS_USE_FRONT_CAMERA) != null){
+            boolean isFront = extra.getBoolean(CameraUtil.EXTRAS_USE_FRONT_CAMERA);
+            if(isFront){
+                return FACING_FRONT;
+            } else {
+                return FACING_BACK;
+            }
+        }
+        if (isFrontCameraIntent(facing)) {
+            return FACING_FRONT;
+        }
+        if (isBackCameraIntent(facing)) {
+            return FACING_BACK;
+        }
+        return -1;
+    }
+
+    public static int getCameraIdOfIntentExtras(Activity currentActivity){
+        return currentActivity.getIntent().getIntExtra(
+                CameraUtil.EXTRAS_CAMERA_ID, -1);
     }
 
     private static boolean isFrontCameraIntent(int intentCameraId) {
@@ -1498,7 +1533,7 @@ public class CameraUtil {
         return Collections.unmodifiableList(requestList);
     }
 
-    private static int getHighSpeedVideoConfigsLists(int cameraId) {
+    public static int getHighSpeedVideoConfigsLists(int cameraId) {
         int optimalSizeIndex = -1;
         SettingsManager settingsManager = SettingsManager.getInstance();
         int[] table = settingsManager.getHighSpeedVideoConfigs(cameraId);

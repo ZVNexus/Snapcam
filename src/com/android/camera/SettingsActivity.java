@@ -27,6 +27,27 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+Not a contribution.
+*/
+
+/*
+ * Copyright (C) 2012 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 package com.android.camera;
 
 import android.app.ActionBar;
@@ -43,7 +64,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.view.Window;
@@ -58,16 +78,24 @@ import android.text.InputType;
 
 import org.codeaurora.snapcam.R;
 import com.android.camera.util.CameraUtil;
+import com.android.camera.CaptureModule.CameraMode;
 import com.android.camera.ui.RotateTextToast;
+import com.android.camera.util.PersistUtil;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 
+import static com.android.camera.CaptureModule.CameraMode.VIDEO;
+
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = "SettingsActivity";
+    private static final boolean DEV_LEVEL_ALL =
+            PersistUtil.getDevOptionLevel() == PersistUtil.CAMERA2_DEV_OPTION_ALL;
+    public static final String CAMERA_MODULE = "camera_module";
     private SettingsManager mSettingsManager;
     private SharedPreferences mSharedPreferences;
     private SharedPreferences mLocalSharedPref;
@@ -97,9 +125,9 @@ public class SettingsActivity extends PreferenceActivity {
             if (key.equals(SettingsManager.KEY_VIDEO_QUALITY)) {
                 updatePreference(SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE);
                 updatePreference(SettingsManager.KEY_VIDEO_ENCODER);
-            }else if ( key.equals(SettingsManager.KEY_VIDEO_ENCODER) ) {
+            } else if (key.equals(SettingsManager.KEY_VIDEO_ENCODER) ) {
                 updatePreference(SettingsManager.KEY_VIDEO_ENCODER_PROFILE);
-            } else if ( key.equals(SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE) ) {
+            } else if (key.equals(SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE)) {
                 value = ((ListPreference) p).getValue();
                 if (!value.equals("off")) {
                     int fpsRate = Integer.parseInt(value.substring(3));
@@ -128,35 +156,26 @@ public class SettingsActivity extends PreferenceActivity {
             Map<String, SettingsManager.Values> map = mSettingsManager.getValuesMap();
             for( SettingsManager.SettingState state : settings) {
                 SettingsManager.Values values = map.get(state.key);
-                boolean enabled = false;
-                if (values != null) {
-                    enabled = values.overriddenValue == null;
-                }
+                boolean enabled = values.overriddenValue == null;
                 Preference pref = findPreference(state.key);
-                if ( pref == null ) return;
+                if (pref == null) continue;
+                Log.i(TAG, "onsettingschange:" + pref.getKey());
 
                 pref.setEnabled(enabled);
 
-                if ( pref.getKey().equals(SettingsManager.KEY_MANUAL_EXPOSURE) ) {
+                if (pref.getKey().equals(SettingsManager.KEY_MANUAL_EXPOSURE)) {
                     UpdateManualExposureSettings();
                 }
 
-                if ( pref.getKey().equals(SettingsManager.KEY_QCFA) ||
-                        pref.getKey().equals(SettingsManager.KEY_PICTURE_FORMAT) ) {
+                if (pref.getKey().equals(SettingsManager.KEY_QCFA) ||
+                        pref.getKey().equals(SettingsManager.KEY_PICTURE_FORMAT)) {
                     mSettingsManager.updatePictureAndVideoSize();
                     updatePreference(SettingsManager.KEY_PICTURE_SIZE);
                     updatePreference(SettingsManager.KEY_VIDEO_QUALITY);
                 }
 
-                if ( pref.getKey().equals(SettingsManager.KEY_VIDEO_HDR_VALUE) ) {
-                    // when enable the Video HDR, app will disable the AUTO HDR.
-                    updateConflictOptionState(SettingsManager.KEY_AUTO_HDR, pref,
-                            "Disable", "disable");
-                }
-
-                if (pref.getKey().equals(SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE)) {
-                    updateConflictOptionState(SettingsManager.KEY_VIDEO_TIME_LAPSE_FRAME_INTERVAL,
-                            pref, "Off", "0");
+                if ((pref.getKey().equals(SettingsManager.KEY_MANUAL_WB))) {
+                    updateManualWBSettings();
                 }
 
                 if ((pref.getKey().equals(SettingsManager.KEY_ZSL) ||
@@ -165,8 +184,12 @@ public class SettingsActivity extends PreferenceActivity {
                     updateFormatPreference();
                 }
 
-                if ( (pref.getKey().equals(SettingsManager.KEY_MANUAL_WB)) ) {
-                    updateManualWBSettings();
+                if(pref.getKey().equals(SettingsManager.KEY_CAPTURE_MFNR_VALUE)) {
+                    updateZslPreference();
+                }
+
+                if (pref.getKey().equals(SettingsManager.KEY_TONE_MAPPING)) {
+                    updateToneMappingSettings();
                 }
 
                 if (pref.getKey().equals(SettingsManager.KEY_DIS) ||
@@ -174,28 +197,38 @@ public class SettingsActivity extends PreferenceActivity {
                     mSettingsManager.filterEISVideQualityOptions();
                     updatePreference(SettingsManager.KEY_VIDEO_QUALITY);
                 }
-
             }
         }
     };
 
+    private boolean isMFNREnabled() {
+        boolean mfnrEnable = false;
+        String mfnrValue = mSettingsManager.getValue(SettingsManager.KEY_CAPTURE_MFNR_VALUE);
+        if (mfnrValue != null) {
+            mfnrEnable = mfnrValue.equals("1");
+        }
+        return mfnrEnable;
+    }
 
-    /**
-     * This method is to enable or disable the option which is conflict with changed setting
-     * @param conflictKey key you want to change after setting is changed
-     * @param changedPref preference of setting which is just changed
-     * @param checkedValue Judgement condition of enable or disable. It is Entry not EntryValue
-     * @param targetValue EntryValue you want to set into conflictKey when you disable it
-     */
-    private void updateConflictOptionState(String conflictKey, Preference changedPref,
-                                           String checkedValue, String targetValue) {
-        ListPreference conflictPref = (ListPreference) findPreference(conflictKey);
-        if (!changedPref.getSummary().equals(checkedValue)) {
-            conflictPref.setValue(targetValue);
-            mSettingsManager.setValue(conflictKey, targetValue);
-            conflictPref.setEnabled(false);
-        } else {
-            conflictPref.setEnabled(true);
+    private void updateZslPreference() {
+        ListPreference ZSLPref = (ListPreference) findPreference(SettingsManager.KEY_ZSL);
+        List<String> key_zsl = new ArrayList<String>(Arrays.asList("Off", "HAL-ZSL" ));
+        List<String> value_zsl = new ArrayList<String>(Arrays.asList( "disable", "hal-zsl"));
+        CaptureModule.CameraMode mode =
+                (CaptureModule.CameraMode) getIntent().getSerializableExtra(CAMERA_MODULE);
+
+        if (ZSLPref != null ) {
+            if (!isMFNREnabled() && (mode != CameraMode.SAT && mode != CameraMode.RTB)) {
+                key_zsl.add("APP-ZSL");
+                value_zsl.add("app-zsl");
+            }
+            ZSLPref.setEntries(key_zsl.toArray(new CharSequence[key_zsl.size()]));
+            ZSLPref.setEntryValues(value_zsl.toArray(new CharSequence[value_zsl.size()]));
+            int idx = ZSLPref.findIndexOfValue(ZSLPref.getValue());;
+            if (idx < 0 ) {
+                idx = 0;
+            }
+            ZSLPref.setValueIndex(idx);
         }
     }
 
@@ -227,8 +260,7 @@ public class SettingsActivity extends PreferenceActivity {
         int cameraId = mSettingsManager.getCurrentCameraId();
         final SharedPreferences pref = SettingsActivity.this.getSharedPreferences(
                 ComboPreferences.getLocalSharedPreferencesName(SettingsActivity.this,
-                        cameraId),
-                Context.MODE_PRIVATE);
+                        mSettingsManager.getCurrentPrepNameKey()), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
         LinearLayout linear = new LinearLayout(SettingsActivity.this);
@@ -283,9 +315,17 @@ public class SettingsActivity extends PreferenceActivity {
                         editor.putString(SettingsManager.KEY_MANUAL_ISO_VALUE, iso);
                         editor.apply();
                     } else {
+                        editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                        editor.apply();
                         RotateTextToast.makeText(SettingsActivity.this, "Invalid ISO",
                                 Toast.LENGTH_SHORT).show();
                     }
+                }
+            });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog,int id) {
+                    editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                    editor.apply();
                 }
             });
             alert.show();
@@ -316,9 +356,17 @@ public class SettingsActivity extends PreferenceActivity {
                         editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE_VALUE, expTime);
                         editor.apply();
                     } else {
+                        editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                        editor.apply();
                         RotateTextToast.makeText(SettingsActivity.this, "Invalid exposure time",
                                 Toast.LENGTH_SHORT).show();
                     }
+                }
+            });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog,int id) {
+                    editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                    editor.apply();
                 }
             });
             alert.show();
@@ -371,9 +419,17 @@ public class SettingsActivity extends PreferenceActivity {
                         editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE_VALUE, expTime);
                         editor.apply();
                     } else {
+                        editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                        editor.apply();
                         RotateTextToast.makeText(SettingsActivity.this, "Invalid exposure time",
                                 Toast.LENGTH_SHORT).show();
                     }
+                }
+            });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog,int id) {
+                    editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                    editor.apply();
                 }
             });
             alert.show();
@@ -413,9 +469,17 @@ public class SettingsActivity extends PreferenceActivity {
                     editor.putFloat(SettingsManager.KEY_MANUAL_GAINS_VALUE, newGain);
                     editor.apply();
                 } else {
+                    editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                    editor.apply();
                     RotateTextToast.makeText(SettingsActivity.this, "Invalid GAINS",
                             Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int id) {
+                editor.putString(SettingsManager.KEY_MANUAL_EXPOSURE, "off");
+                editor.apply();
             }
         });
         alert.show();
@@ -588,6 +652,11 @@ public class SettingsActivity extends PreferenceActivity {
                     }
                 }
             });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog,int id) {
+                    dialog.cancel();
+                }
+            });
             alert.show();
         } else if (manualWBMode.equals(rgbGainMode)) {
             showManualWBGainDialog(linear, alert);
@@ -596,6 +665,160 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
+    private void updateToneMappingSettings() {
+        Log.i(TAG,"updateToneMappingSettings");
+        final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
+        LinearLayout linear = new LinearLayout(SettingsActivity.this);
+        linear.setOrientation(1);
+        alert.setTitle("TONE MAPPING Settings");
+        alert.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int id) {
+                dialog.cancel();
+            }
+        });
+
+        String offMode = this.getString(R.string.pref_camera_tone_mapping_value_off);
+        String userSettingMode = this.getString(R.string.pref_camera_tone_mapping_value_user_setting);
+
+        final String toneMappingMode = mSettingsManager.getValue(SettingsManager.KEY_TONE_MAPPING);
+
+        Log.v(TAG, "toneMappingMode selected = " + toneMappingMode);
+        if (!offMode.equals(toneMappingMode) && !userSettingMode.equals(toneMappingMode)) {
+            showToneMappingDialog(linear, alert, toneMappingMode);
+        } else if(userSettingMode.equals(toneMappingMode)){
+            showToneMappingUserSettingDialog(linear, alert);
+        }
+    }
+    private void showToneMappingUserSettingDialog(LinearLayout linear, AlertDialog.Builder alert){
+        SharedPreferences.Editor editor = mLocalSharedPref.edit();
+        final TextView darkBoostText = new TextView(SettingsActivity.this);
+        final TextView darkBoostValue = new TextView(SettingsActivity.this);
+        final EditText darkBoostInput = new EditText(SettingsActivity.this);
+        final TextView fourthToneText = new TextView(SettingsActivity.this);
+        final TextView fourthToneValue = new TextView(SettingsActivity.this);
+        final EditText fourthToneInput = new EditText(SettingsActivity.this);
+        int floatType = InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER;
+        darkBoostInput.setInputType(floatType);
+        fourthToneInput.setInputType(floatType);
+
+        float darkBoost = mLocalSharedPref.getFloat(SettingsManager.KEY_TONE_MAPPING_DARK_BOOST, -1.0f);
+        float fourthTone = mLocalSharedPref.getFloat(SettingsManager.KEY_TONE_MAPPING_FOURTH_TONE, -1.0f);
+        if (darkBoost == -1.0) {
+            darkBoostValue.setText(" Current Dark boost offset is " );
+        } else {
+            darkBoostValue.setText(" Current Dark boost offset is " + darkBoost);
+        }
+        if (fourthTone == -1.0) {
+            fourthToneValue.setText(" Current Fourth tone anchor is " );
+        } else {
+            fourthToneValue.setText(" Current Fourth tone anchor is " + fourthTone);
+        }
+        final float[] toneMappingRange = {0.0f, 1.0f};
+        alert.setMessage("Enter tone mapping value in the range of " + toneMappingRange[0]+ " to " + toneMappingRange[1]);
+        linear.addView(darkBoostText);
+        linear.addView(darkBoostInput);
+        linear.addView(darkBoostValue);
+        linear.addView(fourthToneText);
+        linear.addView(fourthToneInput);
+        linear.addView(fourthToneValue);
+        alert.setView(linear);
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                float darkBoost = -1.0f;
+                float fourthTone = -1.0f;
+                String darkBoostStr = darkBoostInput.getText().toString();
+                String fourthToneStr = fourthToneInput.getText().toString();
+                if (darkBoostStr.length() > 0) {
+                    darkBoost = Float.parseFloat(darkBoostStr);
+                } else {
+                    editor.putFloat(SettingsManager.KEY_TONE_MAPPING_DARK_BOOST, -1.0f);
+                }
+                if (fourthToneStr.length() > 0) {
+                    fourthTone = Float.parseFloat(fourthToneStr);
+                } else {
+                    editor.putFloat(SettingsManager.KEY_TONE_MAPPING_FOURTH_TONE, -1.0f);
+                }
+
+                if (darkBoost <= toneMappingRange[1] && darkBoost >= toneMappingRange[0]) {
+                    Log.v(TAG, "Setting darkBoost value : " + darkBoost);
+                    editor.putFloat(SettingsManager.KEY_TONE_MAPPING_DARK_BOOST, darkBoost);
+                } else {
+                    RotateTextToast.makeText(SettingsActivity.this, "Invalid darkBoost value:",
+                            Toast.LENGTH_SHORT).show();
+                }
+                if (fourthTone <= toneMappingRange[1] && fourthTone >= toneMappingRange[0]) {
+                    Log.v(TAG, "Setting fourthTone value : " + fourthTone);
+                    editor.putFloat(SettingsManager.KEY_TONE_MAPPING_FOURTH_TONE, fourthTone);
+                } else {
+                    RotateTextToast.makeText(SettingsActivity.this, "Invalid fourthTone value:",
+                            Toast.LENGTH_SHORT).show();
+                }
+                editor.apply();
+            }
+        });
+        alert.show();
+    }
+
+    private void showToneMappingDialog(LinearLayout linear, AlertDialog.Builder alert, String mode){
+        SharedPreferences.Editor editor = mLocalSharedPref.edit();
+        final TextView toneMappingText = new TextView(SettingsActivity.this);
+        final TextView toneMappingValue = new TextView(SettingsActivity.this);
+        final EditText toneMappingInput = new EditText(SettingsActivity.this);
+        int floatType = InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER;
+        toneMappingInput.setInputType(floatType);
+        float currentToneValue = -1.0f;
+        String darkBoost = this.getString(R.string.pref_camera_tone_mapping_value_dark_boost_offset);
+        String fourthTone = this.getString(R.string.pref_camera_tone_mapping_value_fourth_tone_anchor);
+        String toastString = "tone mapping";
+
+        if (mode.equals(darkBoost)) {
+            currentToneValue = mLocalSharedPref.getFloat(
+                    SettingsManager.KEY_TONE_MAPPING_DARK_BOOST, -1.0f);
+            toastString = this.getString(R.string.pref_camera_tone_mapping_entry_dark_boost_offset);
+        } else if (mode.equals(fourthTone)) {
+            currentToneValue = mLocalSharedPref.getFloat(
+                    SettingsManager.KEY_TONE_MAPPING_FOURTH_TONE, -1.0f);
+            toastString = this.getString(R.string.pref_camera_tone_mapping_entry_fourth_tone_anchor);
+        }
+
+        if (currentToneValue == -1.0) {
+            toneMappingValue.setText(" Current " + toastString + " is " );
+        } else {
+            toneMappingValue.setText(" Current " + toastString + " is " + currentToneValue);
+        }
+
+        final float[] toneMappingRange = {0.0f, 1.0f};
+        alert.setMessage("Enter " + toastString+ " in the range of " + toneMappingRange[0]+ " to " + toneMappingRange[1]);
+        linear.addView(toneMappingText);
+        linear.addView(toneMappingInput);
+        linear.addView(toneMappingValue);
+        alert.setView(linear);
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                float toneMapping = -1.0f;
+                String toneMappingStr = toneMappingInput.getText().toString();
+                if (toneMappingStr.length() > 0) {
+                    toneMapping = Float.parseFloat(toneMappingStr);
+                }
+
+                if (toneMapping <= toneMappingRange[1] && toneMapping >= toneMappingRange[0]) {
+                    Log.v(TAG, "Setting toneMapping value : " + toneMapping);
+                    if (mode.equals(darkBoost)) {
+                        final String key = SettingsManager.KEY_TONE_MAPPING_DARK_BOOST;
+                        editor.putFloat(key, toneMapping);
+                    } else if (mode.equals(fourthTone)) {
+                        final String key = SettingsManager.KEY_TONE_MAPPING_FOURTH_TONE;
+                        editor.putFloat(key, toneMapping);
+                    }
+                    editor.apply();
+                } else {
+                    RotateTextToast.makeText(SettingsActivity.this, "Invalid toneMapping value:",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        alert.show();
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -620,8 +843,8 @@ public class SettingsActivity extends PreferenceActivity {
 
         int cameraId = mSettingsManager.getCurrentCameraId();
         mLocalSharedPref = this.getSharedPreferences(
-                ComboPreferences.getLocalSharedPreferencesName(this, cameraId),
-                Context.MODE_PRIVATE);
+                ComboPreferences.getLocalSharedPreferencesName(this,
+                        mSettingsManager.getCurrentPrepNameKey()), Context.MODE_PRIVATE);
         mSettingsManager.registerListener(mListener);
         addPreferencesFromResource(R.xml.setting_menu_preferences);
         mSharedPreferences = getPreferenceManager().getSharedPreferences();
@@ -713,6 +936,165 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             }
         }
+        final ArrayList<String> videoOnlyList = new ArrayList<String>() {
+            {
+                add(SettingsManager.KEY_EIS_VALUE);
+                add(SettingsManager.KEY_FOVC_VALUE);
+                add(SettingsManager.KEY_VIDEO_HDR_VALUE);
+            }
+        };
+        final ArrayList<String> multiCameraSettingList = new ArrayList<String>() {
+            {
+                add(SettingsManager.KEY_SATURATION_LEVEL);
+                add(SettingsManager.KEY_ANTI_BANDING_LEVEL);
+                add(SettingsManager.KEY_STATS_VISUALIZER_VALUE);
+                add(SettingsManager.KEY_SAVERAW);
+                add(SettingsManager.KEY_AUTO_HDR);
+                add(SettingsManager.KEY_MANUAL_EXPOSURE);
+                add(SettingsManager.KEY_SHARPNESS_CONTROL_MODE);
+                add(SettingsManager.KEY_AF_MODE);
+                add(SettingsManager.KEY_EXPOSURE_METERING_MODE);
+                add(SettingsManager.KEY_ABORT_CAPTURES);
+                add(SettingsManager.KEY_INSTANT_AEC);
+                add(SettingsManager.KEY_MANUAL_WB);
+                add(SettingsManager.KEY_AF_MODE);
+                add(SettingsManager.KEY_CAPTURE_MFNR_VALUE);
+                add(SettingsManager.KEY_FACE_DETECTION_MODE);
+                add(SettingsManager.KEY_BSGC_DETECTION);
+                add(SettingsManager.KEY_FACIAL_CONTOUR);
+                add(SettingsManager.KEY_ZSL);
+                add(SettingsManager.KEY_TONE_MAPPING);
+            }
+        };
+        final ArrayList<String> proModeOnlyList = new ArrayList<String>() {
+            {
+                add(SettingsManager.KEY_EXPOSURE_METERING_MODE);
+            }
+        };
+
+        PreferenceGroup developer = (PreferenceGroup) findPreference("developer");
+        PreferenceGroup photoPre = (PreferenceGroup) findPreference("photo");
+        PreferenceGroup videoPre = (PreferenceGroup) findPreference("video");
+        PreferenceScreen parentPre = getPreferenceScreen();
+        CaptureModule.CameraMode mode =
+                (CaptureModule.CameraMode) getIntent().getSerializableExtra(CAMERA_MODULE);
+
+        final SharedPreferences pref = getSharedPreferences(
+                ComboPreferences.getGlobalSharedPreferencesName(this),Context.MODE_PRIVATE);
+        int isSupportT2T = pref.getInt(
+                SettingsManager.KEY_SUPPORT_T2T_FOCUS, -1);
+
+        if (mSettingsManager.getInitialCameraId() == CaptureModule.FRONT_ID ||
+                (isSupportT2T == SettingsManager.TOUCH_TRACK_FOCUS_DISABLE)) {
+            removePreference(SettingsManager.KEY_TOUCH_TRACK_FOCUS, photoPre);
+            removePreference(SettingsManager.KEY_TOUCH_TRACK_FOCUS, videoPre);
+        }
+
+        switch (mode) {
+            case DEFAULT:
+                removePreferenceGroup("video", parentPre);
+                if (mDeveloperMenuEnabled && developer != null) {
+                    if (!DEV_LEVEL_ALL) {
+                        removePreference(SettingsManager.KEY_SWITCH_CAMERA, developer);
+                    }
+                    for (String removeKey : videoOnlyList) {
+                        removePreference(removeKey, developer);
+                    }
+                }
+                break;
+            case VIDEO:
+            case HFR:
+                removePreferenceGroup("photo", parentPre);
+                if (mDeveloperMenuEnabled) {
+                    ArrayList<String> videoAddList = new ArrayList<>();
+                    videoAddList.add(SettingsManager.KEY_ZOOM);
+                    if (DEV_LEVEL_ALL) {
+                        videoAddList.add(SettingsManager.KEY_SWITCH_CAMERA);
+                    }
+                    videoAddList.addAll(videoOnlyList);
+                    videoAddList.add(SettingsManager.KEY_ANTI_BANDING_LEVEL);
+                    if (mode == VIDEO) {
+                        videoAddList.add(SettingsManager.KEY_BSGC_DETECTION);
+                        videoAddList.add(SettingsManager.KEY_FACE_DETECTION_MODE);
+                        videoAddList.add(SettingsManager.KEY_FACIAL_CONTOUR);
+                    }
+                    videoAddList.add(SettingsManager.KEY_TONE_MAPPING);
+                    addDeveloperOptions(developer, videoAddList);
+                }
+                removePreference(mode == VIDEO ?
+                        SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE :
+                        SettingsManager.KEY_VIDEO_TIME_LAPSE_FRAME_INTERVAL, videoPre);
+                break;
+            case RTB:
+                removePreferenceGroup("video", parentPre);
+                removePreference(SettingsManager.KEY_TOUCH_TRACK_FOCUS, photoPre);
+                if (mDeveloperMenuEnabled) {
+                    ArrayList<String> RTBList = new ArrayList<>(multiCameraSettingList);
+                    RTBList.add(SettingsManager.KEY_CAPTURE_MFNR_VALUE);
+                    addDeveloperOptions(developer, RTBList);
+                }
+                break;
+            case SAT:
+                removePreferenceGroup("video", parentPre);
+                if (mDeveloperMenuEnabled) {
+                    ArrayList<String> SATList = new ArrayList<>(multiCameraSettingList);
+                    SATList.add(SettingsManager.KEY_HDR);
+                    addDeveloperOptions(developer, SATList);
+                }
+                break;
+            case PRO_MODE:
+                removePreferenceGroup("video", parentPre);
+                removePreference(SettingsManager.KEY_TOUCH_TRACK_FOCUS, photoPre);
+                if (mDeveloperMenuEnabled) {
+                    if (DEV_LEVEL_ALL) {
+                        proModeOnlyList.add(SettingsManager.KEY_SWITCH_CAMERA);
+                    }
+                    proModeOnlyList.add(SettingsManager.KEY_TONE_MAPPING);
+                    addDeveloperOptions(developer, proModeOnlyList);
+                }
+                break;
+            default:
+                //don't filter
+                break;
+        }
+    }
+
+    private boolean removePreference(String key, PreferenceGroup parentPreferenceGroup) {
+        Preference removePreference = findPreference(key);
+        if (removePreference != null && parentPreferenceGroup != null) {
+            parentPreferenceGroup.removePreference(removePreference);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean removePreferenceGroup(String key, PreferenceScreen parentPreferenceScreen) {
+        PreferenceGroup removePreference = (PreferenceGroup) findPreference(key);
+        if (removePreference != null && parentPreferenceScreen != null) {
+            parentPreferenceScreen.removePreference(removePreference);
+            return true;
+        }
+        return false;
+    }
+
+    private void addDeveloperOptions(PreferenceGroup developer, List<String> keyList) {
+        if (developer == null) {
+            Log.d(TAG, "can't find developer PreferenceGroup");
+            return;
+        }
+        ArrayList<Preference> addList = new ArrayList<>();
+        for (String key : keyList) {
+            Preference p = findPreference(key);
+            if (p != null) {
+                addList.add(p);
+            } else {
+                Log.d(TAG, "can't find key " + key);
+            }
+        }
+        developer.removeAll();
+        for (Preference addItem : addList) {
+            developer.addPreference(addItem);
+        }
     }
 
     private void initializePreferences() {
@@ -723,11 +1105,15 @@ public class SettingsActivity extends PreferenceActivity {
         updatePreference(SettingsManager.KEY_VIDEO_HIGH_FRAME_RATE);
         updatePreference(SettingsManager.KEY_VIDEO_ENCODER);
         updatePreference(SettingsManager.KEY_ZOOM);
-        updatePreference(SettingsManager.KEY_SWITCH_CAMERA);
         updatePreference(SettingsManager.KEY_VIDEO_DURATION);
+        updatePreference(SettingsManager.KEY_SWITCH_CAMERA);
+        updatePreference(SettingsManager.KEY_TONE_MAPPING);
+        updatePreference(SettingsManager.KEY_LIVE_PREVIEW);
         updateMultiPreference(SettingsManager.KEY_STATS_VISUALIZER_VALUE);
         updatePictureSizePreferenceButton();
         updateVideoHDRPreference();
+        updateFormatPreference();
+        updateStoragePreference();
 
         Map<String, SettingsManager.Values> map = mSettingsManager.getValuesMap();
         if (map == null) return;
@@ -779,6 +1165,19 @@ public class SettingsActivity extends PreferenceActivity {
             findPreference("version_info").setSummary(versionName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
+        }
+        updateZslPreference();
+    }
+
+    private void updateStoragePreference() {
+        boolean isWrite = SDCard.instance().isWriteable();
+        ListPreference pref = (ListPreference)findPreference(SettingsManager.KEY_CAMERA_SAVEPATH);
+        if (pref == null) {
+            return;
+        }
+        pref.setEnabled(isWrite);
+        if (!isWrite) {
+            updatePreference(SettingsManager.KEY_CAMERA_SAVEPATH);
         }
     }
 

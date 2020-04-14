@@ -23,7 +23,6 @@ import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -183,10 +182,10 @@ public class CameraHolder {
                             = manager.getCameraCharacteristics(cameraId);
                     Log.d(TAG,"cameraIdList size ="+cameraIdList.length);
                     int facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                    if (mFrontCameraId == -1 && facing == CameraMetadata.LENS_FACING_FRONT) {
+                    if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
                         CaptureModule.FRONT_ID = i;
                         mFrontCameraId = i;
-                    } else if (mBackCameraId == -1 && facing == CameraMetadata.LENS_FACING_BACK) {
+                    } else if (mBackCameraId != -1) {
                         mBackCameraId = i;
                     }
                     mCharacteristics.add(i, characteristics);

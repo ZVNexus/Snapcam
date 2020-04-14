@@ -60,7 +60,7 @@ public class Storage {
     public static final long UNAVAILABLE = -1L;
     public static final long PREPARING = -2L;
     public static final long UNKNOWN_SIZE = -3L;
-    public static final long LOW_STORAGE_THRESHOLD_BYTES = 60 * 1024 * 1024;
+    public static final long LOW_STORAGE_THRESHOLD_BYTES = 100* 1024 * 1024L;
 
     private static boolean sSaveSDCard = false;
 
@@ -142,12 +142,12 @@ public class Storage {
         values.put(ImageColumns.TITLE, title);
         if (mimeType.equalsIgnoreCase("jpeg") ||
             mimeType.equalsIgnoreCase("image/jpeg") ||
-                mimeType.equalsIgnoreCase("heif") ||
+                mimeType.equalsIgnoreCase("heic") ||
             mimeType == null) {
 
-            if (mimeType.equalsIgnoreCase("heif")){
+            if (mimeType.equalsIgnoreCase("heic")){
                 values.put(ImageColumns.DISPLAY_NAME, title + ".heic");
-            } else if(mimeType.equalsIgnoreCase("heifs")){
+            } else if(mimeType.equalsIgnoreCase("heics")){
                 values.put(ImageColumns.DISPLAY_NAME, title + ".heics");
             } else {
                 values.put(ImageColumns.DISPLAY_NAME, title + ".jpg");
@@ -157,7 +157,7 @@ public class Storage {
             values.put(ImageColumns.DISPLAY_NAME, title + ".raw");
         }
         values.put(ImageColumns.DATE_TAKEN, date);
-        if (mimeType.equalsIgnoreCase("heif")) {
+        if (mimeType.equalsIgnoreCase("heic")) {
             values.put(ImageColumns.MIME_TYPE, "image/heif");
         } else {
             values.put(ImageColumns.MIME_TYPE, "image/jpeg");
@@ -274,14 +274,21 @@ public class Storage {
 
     public static String generateFilepath(String title, String pictureFormat) {
         if (pictureFormat == null || pictureFormat.equalsIgnoreCase("jpeg")
-                || pictureFormat.equalsIgnoreCase("heif")
-                || pictureFormat.equalsIgnoreCase("heifs")) {
+                || pictureFormat.equalsIgnoreCase("heic")
+                || pictureFormat.equalsIgnoreCase("heics")) {
             String suffix = ".jpg";
-            if (pictureFormat.equalsIgnoreCase("heif")) {
+            if (pictureFormat.equalsIgnoreCase("heic")) {
                 suffix = ".heic";
-            }else if(pictureFormat.equalsIgnoreCase("heifs")) {
+            }else if(pictureFormat.equalsIgnoreCase("heics")) {
                 suffix = ".heics";
             }
+            if (isSaveSDCard() && SDCard.instance().isWriteable()) {
+                return SDCard.instance().getDirectory() + '/' + title + suffix;
+            } else {
+                return DIRECTORY + '/' + title + suffix;
+            }
+        } else if (pictureFormat.equalsIgnoreCase("yuv")){
+            String suffix = ".yuv";
             if (isSaveSDCard() && SDCard.instance().isWriteable()) {
                 return SDCard.instance().getDirectory() + '/' + title + suffix;
             } else {

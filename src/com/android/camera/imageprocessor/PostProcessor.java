@@ -442,6 +442,8 @@ public class PostProcessor{
     public void onImageReaderReady(ImageReader imageReader, Size maxSize, Size pictureSize) {
         mImageReader = imageReader;
         if(mUseZSL) {
+            if (mZSLReprocessImageReader != null)
+                mZSLReprocessImageReader.close();
             mZSLReprocessImageReader = ImageReader.newInstance(pictureSize.getWidth(), pictureSize.getHeight(), ImageFormat.JPEG, mMaxRequiredImageNum);
             mZSLReprocessImageReader.setOnImageAvailableListener(processedImageAvailableListener, mHandler);
         }
@@ -587,7 +589,7 @@ public class PostProcessor{
                                                    CaptureRequest request,
                                                    TotalCaptureResult result) {
                         Log.d(TAG, "reprocessImage onCaptureCompleted");
-                        if (mActivity != null) {
+                        if (mController.isLongShotActive() && mActivity != null) {
                             mActivity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -709,13 +711,13 @@ public class PostProcessor{
     }
 
     public void onOpen(int postFilterId, boolean isFlashModeOn, boolean isTrackingFocusOn,
-                       boolean isMakeupOn, boolean isSelfieMirrorOn, boolean isSaveRaw,
-                       boolean isSupportedQcfa, boolean isDeepPortrait) {
+                       boolean isT2TFocusOn, boolean isMakeupOn, boolean isSelfieMirrorOn,
+                       boolean isSaveRaw, boolean isSupportedQcfa, boolean isDeepPortrait) {
         mImageHandlerTask = new ImageHandlerTask();
         mSaveRaw = isSaveRaw;
         mIsDeepPortrait = isDeepPortrait;
-        if(setFilter(postFilterId) || isFlashModeOn || isTrackingFocusOn || isMakeupOn || isSelfieMirrorOn
-                || PersistUtil.getCameraZSLDisabled()
+        if(setFilter(postFilterId) || isFlashModeOn || isTrackingFocusOn || isT2TFocusOn
+                || isMakeupOn || isSelfieMirrorOn || PersistUtil.getCameraZSLDisabled()
                 || !SettingsManager.getInstance().isZSLInAppEnabled()
                 || "enable".equals(
                          SettingsManager.getInstance().getValue(SettingsManager.KEY_AUTO_HDR))
@@ -723,8 +725,7 @@ public class PostProcessor{
                 || "18".equals(SettingsManager.getInstance().getValue(
                                   SettingsManager.KEY_SCENE_MODE))
                 || mController.getCameraMode() == CaptureModule.DUAL_MODE
-                || isSupportedQcfa || isDeepPortrait
-                || SettingsManager.getInstance().getSavePictureFormat() == SettingsManager.HEIF_FORMAT){
+                || isSupportedQcfa || isDeepPortrait) {
             mUseZSL = false;
         } else {
             mUseZSL = true;

@@ -44,6 +44,125 @@
             android:layout_height="300dp"
 	        android:id="@+id/mdp_preview_content_mono"
             android:visibility="gone"/>
+        <LinearLayout
+            android:orientation="vertical" android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/grid_line">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#ffffff" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="#ffffff" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:background="#ffffff" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"></LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
     </FrameLayout>
 
     <FrameLayout
@@ -61,9 +180,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <com.android.camera.ui.Camera2FaceView
             android:id="@+id/face_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+        <com.android.camera.ui.TouchTrackFocusRenderer
+            android:id="@+id/touch_track_focus"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"/>
@@ -153,8 +276,48 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/stats_aec_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dip"
+            android:layout_marginTop="272dip"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/stats_aec_lux_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/stats_aec_linear_gain_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/stats_aec_exp_time_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/stats_aec_sensitivity_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15sp" />
+        </LinearLayout>
         <com.android.camera.DrawAutoHDR2
             android:id="@+id/autohdr_view"
+            android:layout_width="200dip"
+            android:layout_height="200dip"
+            android:layout_marginTop="50dip"
+            android:layout_marginLeft="15dip" />
+        <com.android.camera.MFNRDrawer
+            android:id="@+id/mfnr_view"
             android:layout_width="200dip"
             android:layout_height="200dip"
             android:layout_marginTop="50dip"
@@ -168,17 +331,18 @@
 
     <TextView
         android:id="@+id/zoom_switch"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
+        android:layout_width="45dp"
+        android:layout_height="30dp"
         android:layout_gravity="center_vertical|right"
         android:layout_marginRight="20dp"
         android:text="1x"
-        android:textColor="@android:color/transparent"
+        android:textColor="@android:color/white"
         android:alpha="0.7"
         android:gravity="center"
         android:clickable="true"
-        android:background="#00000000"
+        android:background="#D3D3D3"
         android:textSize="12sp"/>
+
 
     <FrameLayout
         android:layout_width="match_parent"

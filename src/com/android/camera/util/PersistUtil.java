@@ -38,12 +38,15 @@ public class PersistUtil {
     public static final int CAMERA2_DEBUG_DUMP_IMAGE = 1;
     public static final int CAMERA2_DEBUG_DUMP_LOG = 2;
     public static final int CAMERA2_DEBUG_DUMP_ALL = 100;
+    public static final int CAMERA2_DEV_OPTION_ALL = 100;
 
     private static final int CAMERA_SENSOR_HORIZONTAL_ALIGNED = 0;
     private static final int CAMERA_SENSOR_VERTICAL_ALIGNED = 1;
 
     private static final int PERSIST_MEMORY_LIMIT =
             SystemProperties.getInt("persist.sys.camera.perf.memlimit", 60);
+    private static final String PERSIST_HFR_LIMIT =
+            SystemProperties.get("persist.sys.camera.hfr.rate", "");
     private static final boolean PERSIST_SKIP_MEMORY_CHECK =
             SystemProperties.getBoolean("persist.sys.camera.perf.skip_memck", false);
     private static final int PERSIST_LONGSHOT_SHOT_LIMIT =
@@ -56,12 +59,18 @@ public class PersistUtil {
             SystemProperties.get("persist.sys.camera.video.size", "");
     private static final boolean PERSIST_CAMERA_CAMERA2 =
             SystemProperties.getBoolean("persist.sys.camera.camera2", true);
+    private static final boolean PERSIST_YUV_CALLBACK_ENABLE =
+            SystemProperties.getBoolean("persist.sys.camera.yuvcallback",false);
     private static final boolean PERSIST_CAMERA_ZSL =
             SystemProperties.getBoolean("persist.sys.camera.zsl.disabled", false);
     private static final int PERSIST_CAMERA_CANCEL_TOUCHFOCUS_DELAY =
             SystemProperties.getInt("persist.sys.camera.focus_delay", 5000);
     private static final int PERSIST_CAMERA_DEBUG =
             SystemProperties.getInt("persist.sys.camera.debug", 0);
+    private static final boolean PERSIST_CAMERA_BSGC_DEBUG =
+            SystemProperties.getBoolean("persist.sys.camera.bsgc.debug", false);
+    private static final int PERSIST_CAMERA_DEV_DEBUG_OPTION =
+            SystemProperties.getInt("persist.sys.camera.devoption.debug", 0);
     private static final String PERSIST_CAMERA_STILLMORE_BRCOLR =
             SystemProperties.get("persist.sys.camera.stm_brcolor", "0.5");
     private static final String PERSIST_CAMERA_STILLMORE_BRINTENSITY =
@@ -126,10 +135,16 @@ public class PersistUtil {
     private static final String PERSIST_DISPLAY_LMAX =
             SystemProperties.get("persist.sys.camera.display.lmax", "");
     private static final int PERSIST_BURST_PREVIEW_REQUEST_NUMS =
-            SystemProperties.getInt("persist.sys.camera.burst.preview.nums", 0);
+            SystemProperties.getInt("persist.sys.camera.burst.preview.nums", 1);
+    private static final boolean PERSIST_SSM_ENABLE =
+            SystemProperties.getBoolean("persist.sys.camera.ssm.enable", false);
 
     public static int getMemoryLimit() {
         return PERSIST_MEMORY_LIMIT;
+    }
+
+    public static String getHFRRate() {
+        return PERSIST_HFR_LIMIT;
     }
 
     public static boolean getSkipMemoryCheck() {
@@ -183,6 +198,18 @@ public class PersistUtil {
 
     public static int getCamera2Debug() {
         return PERSIST_CAMERA_DEBUG;
+    }
+
+    public static boolean getBsgcebug(){
+        return PERSIST_CAMERA_BSGC_DEBUG;
+    }
+
+    public static int getDevOptionLevel() {
+        return PERSIST_CAMERA_DEV_DEBUG_OPTION;
+    }
+
+    public static boolean getYUVCallbackEnable() {
+        return PERSIST_YUV_CALLBACK_ENABLE;
     }
 
     public static float getStillmoreBrColor(){
@@ -327,5 +354,9 @@ public class PersistUtil {
 
     public static int isBurstShotFpsNums() {
         return PERSIST_BURST_PREVIEW_REQUEST_NUMS;
+    }
+
+    public static boolean isSSMEnabled() {
+        return PERSIST_SSM_ENABLE;
     }
 }
